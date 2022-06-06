@@ -1,0 +1,22 @@
+:root {
+    --bMainColor: #F4F4F4;
+    --colorErrorBack: #d0d0d0;
+    --colorErrorBorder: #707070;
+    --colorErrorLetter: black;
+}
+
+* {
+    font-family: monospace, Courier, 'Courier New';
+}
+
+html, main, footer {
+    background-color: var(--bMainColor);
+}
+
+header {
+    background-color: var(--colorErrorBack);
+    color: var(--colorErrorLetter);
+    border: 1px solid var(--colorErrorBorder);
+    width: auto;
+    text-align: center;
+}
