@@ -1,5 +1,5 @@
 :root {
-    --bMainColor: #F4F4F4;
+    --bMainColor: #ececec;
     --colorErrorBack: #d0d0d0;
     --colorErrorBorder: #707070;
     --colorErrorLetter: black;
@@ -19,4 +19,8 @@ header {
     border: 1px solid var(--colorErrorBorder);
     width: auto;
     text-align: center;
+}
+
+.table {
+    background-color: white;
 }

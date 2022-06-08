@@ -1,0 +1,92 @@
+{% extends "layout.html" %}
+
+{% block title %}
+My List
+{% endblock %}
+
+{% block main %}
+<h1>This is my Main Page</h1>
+<p>Here I'll create and show my content.</p>
+<div class="col-1 ms-auto my-3">
+<button class="btn btn-primary align-end" type="button" id="createTable">New Table</button>
+<button class="btn btn-primary align-end" type="button" id="createRow">New Row</button>
+</div>
+<div class="content">
+    {% if data %}
+
+    {% for module in data %}
+    <form method="post" action="/mylist">
+        <h3><input type="hidden" name="table_name" value="{{ module['title'] }}"></input>{{ module["title"] | capitalize }}</h3>
+        <table class="table rounded" id="{{ module['title'] }}">
+            <thead>
+                <tr>
+                    <th onclick="sortTable(0)" scope="col" class="col-2">Content</th>
+                    <th onclick="sortTable(1)" scope="col" class="col-1">Type</th>
+                    <th onclick="sortTable(2)" scope="col" class="col-1">Rate</th>
+                    <th onclick="sortTable(3)" scope="col" class="col-7">Comments</th>
+                    <th onclick="sortTable(4)" scope="col" class="col-1">Link</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in module["table_data"] %}
+                <tr>
+                    <td class="align-top">{{ row.content | title }}</td>
+                    <td class="align-top">{{ row.type | title }}</td>
+                    <td class="align-top">{{ row.rate }}</td>
+                    <td class="align-top">{{ row.comment | capitalize }}</td>
+                    <td class="align-top"><a target="_blank" href="{{ row.link }}">{% if row.link == "" %}{% else %}Go{% endif %}</a></td>
+                </tr>
+                {% endfor %}
+                
+                {% if data %}<tr class="newRow"></tr>{% endif %}
+            </tbody>
+        </table>
+        <span class="confirmRow"></span>
+    </form>
+    {% endfor %}
+    {% endif %}
+    <script>
+        function sortTable(n) {
+        let table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+        table = document.getElementById("movies");
+        switching = true;
+        dir = "asc"; 
+
+        while (switching) {
+            switching = false;
+            rows = table.rows;
+
+            for (i = 1; i < (rows.length - 1); i++) {
+            shouldSwitch = false;
+            x = rows[i].getElementsByTagName("TD")[n];
+            y = rows[i + 1].getElementsByTagName("TD")[n];
+
+            if (dir == "asc") {
+                
+                if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+                shouldSwitch= true;
+                break;
+                }
+            } else if (dir == "desc") {
+                if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+                shouldSwitch = true;
+                break;
+                }
+            }
+            }
+            if (shouldSwitch) {
+            rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+            switching = true;
+            switchcount ++;      
+            } else {
+            if (switchcount == 0 && dir == "asc") {
+                dir = "desc";
+                switching = true;
+            }
+            }
+        }
+        }
+    </script>
+
+</div>
+{% endblock %}
