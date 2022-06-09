@@ -1,5 +1,3 @@
-
-from distutils.log import debug
 from cs50 import SQL
 from flask import render_template, redirect, Flask, request, flash, session
 from flask_session import Session
@@ -96,61 +94,90 @@ def register():
     else:
         return render_template("register.html")
 
-@app.route("/", methods=["GET", "POST"])
+@app.route("/")
 @login_required
 def index():
-    if request.method == "POST":
-        return render_template("other.html")
+    return render_template("index.html")
 
-    else:
-        return render_template("index.html")
-
-@app.route("/mylist", methods=["GET", "POST"])
+@app.route("/mylist", methods=["GET"])
 @login_required
-def mylist():
-    if request.method == "POST":
-        if not request.form.get("content"):
-            error = flash("Any content was fill")
-            return render_template("mylist.html", error=error)
-
-        elif len(request.form.get("comment")) > 240:
-            error = flash("Comment section filled incorrectly")
-            return render_template("mylist.html", error=error)
-
-        else:
-            if not request.form.get("rate"):
-                rate = ""
-            else:
-                rate = float(request.form.get("rate"))
-            
-            table_name = request.form.get("table_name").lower()
-            content = request.form.get("content").lower()
-            type = request.form.get("type").lower()
-            comment = request.form.get("comment").lower()
-            link = request.form.get("link").lower()
-            id = int(session["user_id"])
-
-            db.execute("INSERT INTO tables (id, table_name, content, type, rate, comment, link) VALUES (?, ?, ?, ?, ?, ?, ?)", id, table_name, content, type, rate, comment, link)
-            return redirect("/mylist")
-
-        
+def mylist():                
+    if not db.execute("SELECT * FROM data_user WHERE id_user = ?", session["user_id"]):
+        return render_template("mylist.html")
+    
     else:
-        if not db.execute("SELECT * FROM tables WHERE id = ?", session["user_id"]):
-            return render_template("mylist.html")
-        
+        diff_tables = db.execute("SELECT DISTINCT table_name FROM data_user WHERE id_user = ?", session["user_id"])
+        data_list = []
+        for row in diff_tables:
+            data = db.execute("SELECT * FROM data_user WHERE id_user = ? and table_name = ?", session["user_id"], row["table_name"])
+            data_dictionary = {"table_data": data,
+                                "title": row["table_name"]} 
+
+            data_list.append(data_dictionary)
+
+
+        return render_template("mylist.html", data=data_list)
+
+@app.route("/ranking")
+def ranking():
+    diff_tables = db.execute("SELECT DISTINCT table_name FROM data_user WHERE bool_ranking = 1")
+    data_list = []
+    for row in diff_tables:
+        data_table = db.execute("SELECT * FROM data_user WHERE table_name = ?", row["table_name"])
+        data_user = db.execute("SELECT * FROM users WHERE id = ?", data_table[0]["id_user"])
+        data_dictionary = {"table_data": data_table,
+                            "title": row["table_name"],
+                            "owner": data_user[0]["user"]}
+
+        data_list.append(data_dictionary)
+
+    return render_template("ranking.html", data=data_list)
+
+@app.route("/addlist", methods=["POST"])
+@login_required
+def addlist():
+    if not request.form.get("content"):
+            error = flash("You must put a comment")
+            return render_template("mylist.html", error=error)
+
+    elif len(request.form.get("comment")) > 240:
+        error = flash("Comment section filled incorrectly")
+        return render_template("mylist.html", error=error)
+
+    else:
+        if not request.form.get("rate"):
+            rate = ""
         else:
-            geral = db.execute("SELECT * FROM tables WHERE id = ?", session["user_id"])
-            diff_tables = db.execute("SELECT DISTINCT table_name FROM tables")
-            data_list = []
-            for row in diff_tables:
-                data = db.execute("SELECT * FROM tables WHERE id = ? and table_name = ?", session["user_id"], row["table_name"])
+            rate = float(request.form.get("rate"))
+        
+        table_name = request.form.get("table_name").lower()
+        content = request.form.get("content").lower()
+        type = request.form.get("type").lower()
+        comment = request.form.get("comment").lower()
+        link = request.form.get("link").lower()
+        id = int(session["user_id"])
 
-                data_dictionary = {"table_data": data,
-                                    "title": row["table_name"]} 
+        db.execute("INSERT INTO data_user (id_user, table_name, content, type, rate, comment, link) VALUES (?, ?, ?, ?, ?, ?, ?)", id, table_name, content, type, rate, comment, link)
+        return redirect("/mylist")
 
-                data_list.append(data_dictionary)
+@app.route("/deletelist")
+@login_required
+def deletelist():
+    id_table = request.args.get("id_table", type=int)
+    db.execute("DELETE FROM data_user WHERE content = ?", id_table)
+    return redirect("/mylist")
 
+@app.route("/toranking")
+@login_required
+def toranking():
+    boolRanking = request.args.get("bool", type=int)
 
-
-            return render_template("mylist.html", data=data_list)
-
+    if not db.execute("SELECT * FROM data_user WHERE id_user = ? AND bool_ranking = ?", session["user_id"], boolRanking):
+        # Aqui será quando for 0
+        db.execute("UPDATE data_user SET bool_ranking = 1 WHERE id_user = ?", session["user_id"])
+        return redirect("/mylist")
+    
+    else:
+        # Aqui será quando for 1
+        db.execute("UPDATE data_user SET bool_ranking = 0 WHERE id_user = ?", session["user_id"])
+        return redirect("/mylist")
