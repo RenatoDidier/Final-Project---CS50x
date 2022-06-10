@@ -41,5 +41,3 @@ $(document).ready(function () {
     
     });     
 })
-
-$("#dropdownMenuButton1").dropdown();

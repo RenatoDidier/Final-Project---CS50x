@@ -5,35 +5,43 @@ Ranking
 {% endblock %}
 
 {% block main %}
+
 <h1>Ranking List</h1>
     {% if data %}
 
     {% for module in data %}
-    <div class="content my-5">    
-            <h3>{{ module["title"] | capitalize }} from {{ module["owner"] | capitalize }}</h3>
-            <table class="table rounded">
-                <thead>
-                    <tr>
-                        <th scope="col" class="col-1">Content</th>
-                        <th scope="col" class="col-1">Type</th>
-                        <th scope="col" class="col-1">Rate</th>
-                        <th scope="col" class="col-6">Comments</th>
-                        <th scope="col" class="col-1">Link</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for row in module["table_data"] %}
-                    <tr>
-                        <td class="align-top">{{ row.content | title }}</td>
-                        <td class="align-top">{{ row.type | title }}</td>
-                        <td class="align-top">{{ row.rate }}</td>
-                        <td class="align-top">{{ row.comment | capitalize }}</td>
-                        <td class="align-top"><a target="_blank" href="{{ row.link }}">{% if row.link == "" %}{% else %}Go{% endif %}</a></td>
-                    </tr>
-                    {% endfor %}
-                    
-                </tbody>
-            </table>
+    <div class="d-flex mt-5" style="margin-left: 80vw;"><span class="titleR">{{ module["title"] | capitalize }} from </span><span class="nameR">{{ module["owner"] | capitalize }}</span></div>
+    <div class="content">    
+        <table class="table rounded">
+            <thead>
+                <tr>
+                    <th scope="col" class="col-1">Content</th>
+                    <th scope="col" class="col-1">Type</th>
+                    <th scope="col" class="col-1">Rate</th>
+                    <th scope="col" class="col-6">Comments</th>
+                    <th scope="col" class="col-1">Link</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in module["table_data"] %}
+                <tr>
+                    <td class="align-top">{{ row.content | title }}</td>
+                    <td class="align-top">{{ row.type | title }}</td>
+                    <td class="align-top">{{ row.rate }}</td>
+                    <td class="align-top">{{ row.comment | capitalize }}</td>
+                    <td class="align-top"><a target="_blank" href="{{ row.link }}">{% if row.link == "" %}{% else %}Go{% endif %}</a></td>
+                </tr>
+                {% endfor %}
+                
+            </tbody>
+        </table>
+        <div class="mt-1 mb-5" style="margin-left: 85vw;">
+            <h3>
+                <a href="/voteSystem?action=1&table_name={{ module['title'] }}&owner_id={{ module['id'] }}"><i class="fa-solid fa-circle-up" style="color:green;"></i></a> 
+                {{ module["upvote"] }} 
+                <a href="/voteSystem?action=-1&table_name={{ module['title'] }}&owner_id={{ module['id'] }}"><i class="fa-solid fa-circle-down" style="color:red;"></a></i> {{ module["downvote"] }}
+            </h3>
+        </div>
     </div>
     {% endfor %}
     {% endif %}
