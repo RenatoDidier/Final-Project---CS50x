@@ -15,9 +15,14 @@ The idea is simple. The user can create different tables to store different info
 
 After you create your table, you can post it in a section that anyone who has account can vote. That feature is pretty important and I missed a tool similar than that when I started studying programming. It would be awesome if someone who had started programming lately and had achieved a good place in this area had written his or her path.  
 
-### Database
-
-Database stores all users, tables and vote checkers. They are organized in a way that they are associate with each other.
+## Files
+- app.py<br>Here is where the main code was written. Creation and management of users account; Creation of a new table through user input; The right output to generate lists; Vote system; 
+- helpers.py<br>There is only one function which control which information someone who does not have account could access.
+- (folder) templates<br>All html files
+- createRow.js<br>JavaScript to generate many input to generate a new role;
+- createColumn.js<br>JavaScript to generate many input to generate a new role;
+- dropDown.js<br>Function to make dropdowns work;
+- sortTable.js<br>Function to able framework called DataTable;
 
 ## Possible improvements
 
