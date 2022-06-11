@@ -9,7 +9,7 @@ Technologies used:
 - CSS (Bootstrap & DataTable)
 - HTML
 
-## How the webpage works?
+## How the web app works?
 
 The idea is simple. The user can create different tables to store different informations. For instance: "The best movies of my life", "The best movies of 2022", "Books Read in 2022", "Courses" so on..
 
