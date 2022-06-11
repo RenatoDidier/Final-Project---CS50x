@@ -1,62 +1,59 @@
 {% extends "layout.html" %}
 
 {% block title %}
-My List
+    My List
 {% endblock %}
 
 {% block main %}
-<div class="col-1 ms-auto">
-<button class="btn btn-primary align-end" type="button" id="createTable">New Table</button>
-</div>
+    <div class="col-1 ms-auto">
+    <button class="btn btn-primary align-end" type="button" id="createTable">New Table</button>
+    </div>
     <div id="spaceToCreate"></div>
+
     {% if data %}
+        {% for module in data %}
+            <div class="content mt-2 mb-5">    
+                <form action="/addlist" method="post">
+                    <h3><input type="hidden" name="table_name" value="{{ module['title'] }}"></input>{{ module["title"] | capitalize }}</h3>
+                    <table class="table rounded {{ module['title'] }}" id="tableChange">
+                        <thead>
+                            <tr>
+                                <th scope="col" class="col-2">Content</th>
+                                <th scope="col" class="col-1">Type</th>
+                                <th scope="col" class="col-1">Rate<span style="font-size: 0.5rem;"> (0.0 ~ 5.0)</span></th>
+                                <th scope="col" class="col-8">Comments</th>
+                                <th scope="col" class="col-2">Link</th>
+                                <th scope="col" class="col-1"></th>
+                            </tr>
+                        </thead>
 
-    {% for module in data %}
-    <div class="content mt-2 mb-5">    
-        <form action="/addlist" method="post">
-            <h3><input type="hidden" name="table_name" value="{{ module['title'] }}"></input>{{ module["title"] | capitalize }}</h3>
-            <table class="table rounded {{ module['title'] }}" id="tableChange">
-                <thead>
-                    <tr>
-                        <th scope="col" class="col-2">Content</th>
-                        <th scope="col" class="col-1">Type</th>
-                        <th scope="col" class="col-1">Rate</th>
-                        <th scope="col" class="col-8">Comments</th>
-                        <th scope="col" class="col-2">Link</th>
-                        <th scope="col" class="col-1"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for row in module["table_data"] %}
-                    <tr>
-                        <td class="align-top">{{ row.content | title }}</td>
-                        <td class="align-top">{{ row.type | title }}</td>
-                        <td class="align-top">{{ row.rate }}</td>
-                        <td class="align-top">{{ row.comment | capitalize }}</td>
-                        <td class="align-top"><a target="_blank" href="{{ row.link }}">{% if row.link == "" %}{% else %}Go{% endif %}</a></td>
-                        <td><a class="delete" href="/deletelist?id_table={{ row.id_table }}"><i class="fa-solid fa-circle-minus" style="color: red;"></i></a></td>
-                    </tr>
-                    {% endfor %}
-                    
-                </tbody>
-            </table>
-            <div class="d-flex ms-auto mt-3">
-            {% if module["active"] == 0 %}
-                <a href="/toranking?bool=1"><button type="button" class="btn btn-danger">Off</button></a>
-            {% else %}
-                <a href="/toranking?bool=1"><button type="button" class="btn btn-success">On</button></a>
-            {% endif %}
-            </div>
-            <div class="d-flex ms-auto"><p>Ranking</p></div>
-
-            <span class="confirmRow"></span>
-        </form>
-        </div>
-        
-        <div class="ml-auto"><button type="button" class="btn btn-primary align-end" type="button" id="createRow">New Row</button></div>
-    {% endfor %}
+                        <tbody>
+                            {% for row in module["table_data"] %}
+                                <tr>
+                                    <td class="align-top">{{ row.content | title }}</td>
+                                    <td class="align-top">{{ row.type | title }}</td>
+                                    <td class="align-top">{{ row.rate }}</td>
+                                    <td class="align-top">{{ row.comment | capitalize }}</td>
+                                    <td class="align-top"><a target="_blank" href="{{ row.link }}">{% if row.link == "" %}{% else %}Go{% endif %}</a></td>
+                                    <td><a class="delete" href="/deletelist?id_table={{ row.id_table }}"><i class="fa-solid fa-circle-minus" style="color: red;"></i></a></td>
+                                </tr>
+                            {% endfor %}
+                            
+                        </tbody>
+                    </table>
+                    <div class="d-flex ms-auto mt-3">
+                        {% if module["active"] == 0 %}
+                            <a href="/toranking?bool=1"><button type="button" class="btn btn-danger">Off</button></a>
+                        {% else %}
+                            <a href="/toranking?bool=1"><button type="button" class="btn btn-success">On</button></a>
+                        {% endif %}
+                    </div>
+                    <div class="d-flex ms-auto"><p>Ranking</p></div>
+                    <span class="confirmRow"></span>
+                </form>
+            </div>                
+            <div class="ml-auto"><button type="button" class="btn btn-primary align-end" type="button" id="createRow">New Row</button></div>
+        {% endfor %}
     {% endif %}
-
-
-
+    
 {% endblock %}

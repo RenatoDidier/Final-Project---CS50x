@@ -13,14 +13,6 @@ html, main, footer {
     background-color: var(--bMainColor);
 }
 
-header {
-    background-color: var(--colorErrorBack);
-    color: var(--colorErrorLetter);
-    border: 1px solid var(--colorErrorBorder);
-    width: auto;
-    text-align: center;
-}
-
 table {
     background-color: white;
 }
@@ -80,4 +72,8 @@ table {
 }
 .nameR {
     font-size: 2rem;
+}
+
+.bold {
+    font-weight: bold;
 }

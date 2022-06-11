@@ -1,20 +1,20 @@
 from cs50 import SQL
 from flask import render_template, redirect, Flask, request, flash, session
 from flask_session import Session
-from sqlalchemy import table
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from helpers import login_required
 
-app = Flask(__name__)
 
+app = Flask(__name__)
+# Configuração do app
 app.config["TEMPLATES_AUTO_RELOAD"] = True
-# Salvar informação que um usuário está conectado
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
 db = SQL("sqlite:///shares.db")
+
 
 @app.after_request
 def after_request(response):
@@ -23,6 +23,7 @@ def after_request(response):
     response.headers["Expires"] = 0
     response.headers["Pragma"] = "no-cache"
     return response
+
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -93,16 +94,11 @@ def register():
             error = flash("You account was created!")
             return render_template("login.html", error=error)
 
-
     else:
         return render_template("register.html")
 
-@app.route("/")
-@login_required
-def index():
-    return render_template("index.html")
 
-@app.route("/mylist")
+@app.route("/")
 @login_required
 def mylist():                
     if not db.execute("SELECT * FROM data_user WHERE id_user = ?", session["user_id"]):
@@ -118,33 +114,31 @@ def mylist():
                                 "active": data[0]["bool_ranking"]} 
 
             data_list.append(data_dictionary)
-
-
         return render_template("mylist.html", data=data_list)
+
 
 @app.route("/ranking")
 def ranking():
-    diff_tables = db.execute("SELECT DISTINCT table_name FROM data_user WHERE bool_ranking = 1")
+    diff_tables = db.execute("SELECT DISTINCT id_user FROM data_user WHERE bool_ranking = 1")
     data_list = []
     for row in diff_tables:
-        data_table = db.execute("SELECT * FROM data_user WHERE table_name = ?", row["table_name"])
-        data_user = db.execute("SELECT * FROM users WHERE id = ?", data_table[0]["id_user"])
-        
+        data_table = db.execute("SELECT * FROM data_user WHERE id_user = ? AND bool_ranking = 1", row["id_user"])
+        data_user = db.execute("SELECT * FROM users WHERE id = ?", data_table[0]["id_user"])        
         if not db.execute("SELECT * FROM vote_table WHERE id_owner = ? AND table_name = ?", data_table[0]["id_user"], data_table[0]["table_name"]):
             data_vote = [{"upvote": 0, "downvote": 0}]
         else:
             data_vote =  db.execute("SELECT * FROM vote_table WHERE id_owner = ? AND table_name = ?", data_table[0]["id_user"], data_table[0]["table_name"])
         
         data_dictionary = {"table_data": data_table,
-                            "title": row["table_name"],
+                            "title": data_table[0]["table_name"],
                             "owner": data_user[0]["user"],
                             "id": data_user[0]["id"],
                             "upvote": data_vote[0]["upvote"],
                             "downvote": data_vote[0]["downvote"]}
-
         data_list.append(data_dictionary)
 
     return render_template("ranking.html", data=data_list)
+
 
 @app.route("/addlist", methods=["POST"])
 @login_required
@@ -162,23 +156,28 @@ def addlist():
             rate = ""
         else:
             rate = float(request.form.get("rate"))
+            if rate < 0 or rate > 5:
+                error = flash("You rate must be between 0 to 5.0")
+                return render_template("mylist.html", error=error)
         
         table_name = request.form.get("table_name").lower()
         content = request.form.get("content").lower()
-        type = request.form.get("type").lower()
-        comment = request.form.get("comment").lower()
-        link = request.form.get("link").lower()
+        type = request.form.get("type")
+        comment = request.form.get("comment")
+        link = request.form.get("link")
         id = int(session["user_id"])
 
         db.execute("INSERT INTO data_user (id_user, table_name, content, type, rate, comment, link) VALUES (?, ?, ?, ?, ?, ?, ?)", id, table_name, content, type, rate, comment, link)
-        return redirect("/mylist")
+        return redirect("/")
+
 
 @app.route("/deletelist")
 @login_required
 def deletelist():
     id_table = request.args.get("id_table", type=int)
     db.execute("DELETE FROM data_user WHERE id_table = ?", id_table)
-    return redirect("/mylist")
+    return redirect("/")
+
 
 @app.route("/toranking")
 @login_required
@@ -188,12 +187,13 @@ def toranking():
     if not db.execute("SELECT * FROM data_user WHERE id_user = ? AND bool_ranking = ?", session["user_id"], boolRanking):
         # Aqui será quando for 0
         db.execute("UPDATE data_user SET bool_ranking = 1 WHERE id_user = ?", session["user_id"])
-        return redirect("/mylist")
+        return redirect("/")
     
     else:
         # Aqui será quando for 1
         db.execute("UPDATE data_user SET bool_ranking = 0 WHERE id_user = ?", session["user_id"])
-        return redirect("/mylist")
+        return redirect("/")
+
 
 @app.route("/voteSystem")
 @login_required
@@ -282,4 +282,23 @@ def voteSystem():
                 sum_downvote = data_vote_table[0]["downvote"] + action
                 db.execute("UPDATE vote_table SET downvote = ? WHERE id_owner = ? AND table_name = ?", sum_downvote, owner_id, table_name)
                 return redirect("/ranking")
-        
+
+@app.route("/change", methods=["GET", "POST"])
+def change():
+    if request.method == "POST":
+        if not request.form.get("password"):
+            error = flash("Please informe a new password")
+            return render_template("change.html", error=error)
+        elif request.form.get("password") != request.form.get("confirmation"):
+            error = flash("Password and confirmation password doesn't match")
+            return render_template("change.html", error = error)
+        else:
+            hash = generate_password_hash(request.form.get("password"))
+            db.execute("UPDATE users SET hash = ? WHERE id = ?", hash, session["user_id"])
+            error = flash("0")
+            error = flash("You've changed your password succesfully")
+            return render_template("mylist.html", error=error)
+
+
+    else:
+        return render_template("change.html")        
